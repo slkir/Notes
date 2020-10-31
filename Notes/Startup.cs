@@ -41,7 +41,7 @@ namespace Notes
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers();
+                endpoints.MapControllerRoute("default", "{controller=api}/{action=notes}/{id?}");
             });
         }
     }
