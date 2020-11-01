@@ -51,16 +51,17 @@ function deleteTask(id){
         return x.id == id;
     });
 
-    $(`li#${id}`).fadeOut(350, function(){
-        noteList.splice(index, 1);
-        this.remove();                
-        console.log(noteList);
-    })  
-
     $.ajax({
         type: "DELETE",
         url: api + id,
-        success: function () { console.log('Deleted from server') },        
+        success: function () {
+            $(`li#${id}`).fadeOut(350, function () {
+                noteList.splice(index, 1);
+                this.remove();
+            })  
+
+            console.log('Deleted successfuly');
+        }
     });
 }
 
