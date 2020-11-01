@@ -1,4 +1,4 @@
-let taskList = [];
+let noteList = [];
 
 function сreateTask(id, isChecked, text, isImportant) {
     return {
@@ -21,6 +21,7 @@ function createRandomId(length) {
  }
  
 function addTask() {
+
     console.log('addTask() function');
 
     if ($('#task').val() == '') {
@@ -29,7 +30,7 @@ function addTask() {
 
     // Add task to array.
     let task = сreateTask(createRandomId(5), false, `${$('#task').val()}`, false);
-    taskList.push(task);
+    noteList.push(task);
 
     // Add task to html.
     $('.todo_list').append(`
@@ -44,18 +45,19 @@ function addTask() {
     $(`li#${task.id}`).fadeOut(0);
     $(`li#${task.id}`).fadeIn(350);
 
-    console.log(taskList);
+    console.log(noteList);
 }
 
+
 function deleteTask(id){
-    let index = taskList.findIndex((x) =>{
+    let index = noteList.findIndex((x) =>{
         return x.id == id;
     });
 
     $(`li#${id}`).fadeOut(350, function(){
-        taskList.splice(index, 1);
+        noteList.splice(index, 1);
         this.remove();                
-        console.log(taskList);
+        console.log(noteList);
     })  
 }
 
@@ -78,7 +80,7 @@ $(document).ready(function () {
         
         let noteId = $(this).parent().attr('id');
 
-        let taskToEdit = taskList.find((x) => {
+        let taskToEdit = noteList.find((x) => {
             return x.id == noteId;
         });
         
@@ -100,3 +102,27 @@ $('#task').on('keydown', function (arg) {
         $('#task').val('');
     }
 });
+
+
+loadNotesFromServer('https://localhost:44346/api/notes');
+
+function loadNotesFromServer(url) {
+    loadedTaskList = [];
+    $.ajax({
+        url
+    }).done(function (data) {
+        noteList = data;
+        loadTasks();
+    });
+}
+
+function loadTasks() {
+    noteList.forEach((note) => {
+        $('.todo_list').append(`
+        <li id='${note.id}' class="task_item">
+            <i class="${note.isImportant ? 'fas' : 'far'} fa-star"></i>
+            <input class="task_item__checkbox" type="checkbox" ${note.isCompleted ? 'checked' : 'unchecked'}>${note.text}<i class="far fa-times-circle btn_del"></i>
+        </li>
+        `);
+    })
+}
