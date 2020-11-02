@@ -65,6 +65,20 @@ function deleteTask(id){
     });
 }
 
+function updateNote(noteId, updatedNote) {
+    $.ajax({
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json' 
+        },
+        url: api + noteId,
+        method: 'put',
+        data: JSON.stringify(updatedNote),
+        dataType: 'json'
+    })
+}
+
+
 // Обработчики событий.
 $(document).ready(function () {
 
@@ -84,19 +98,46 @@ $(document).ready(function () {
         
         let noteId = $(this).parent().attr('id');
 
-        let taskToEdit = noteList.find((x) => {
+        let noteToEdit = noteList.find((x) => {
             return x.id == noteId;
         });
         
-        taskToEdit.isImportant = !taskToEdit.isImportant;
-        if (taskToEdit.isImportant){
+        noteToEdit.isImportant = !noteToEdit.isImportant;
+        if (noteToEdit.isImportant){
             $(this).removeClass('far').addClass('fas');
         }
         else{
             $(this).removeClass('fas').addClass('far');
         }
+
+        delete noteToEdit.id;
+        updateNote(noteId, noteToEdit);
+    }) 
+
+
+    // Нажатие на checkbox (Задача выполнена)
+    $(document).on('click', '.task_item__checkbox', function (e) {
+        console.log('checkbox clicked');
+
+        let noteId = $(this).parent().attr('id');
+
+        let noteToEdit = noteList.find((x) => {
+            return x.id == noteId;
+        });
+
+        noteToEdit.isCompleted = !noteToEdit.isCompleted;
+        if (noteToEdit.isCompleted) {
+            $(this).prop('checked', true);
+        }
+        else {
+            $(this).prop('checked', false);
+        }
+
+        delete noteToEdit.id;
+        updateNote(noteId, noteToEdit);
     }) 
 });
+
 
 $('#task').on('keydown', function (arg) {
     if (arg.key == 'Enter') {
