@@ -1,147 +1,62 @@
-let notesList = [];
-let api = 'https://localhost:44346/api/notes/';
+import { loadNotes } from './server.js'
+import { createNote } from './server.js'
+import { deleteNote } from './server.js'
+import { updateNote } from './server.js'
 
-let Note = function (id, text, isCompleted, isImportant) {
+let url = 'https://localhost:44346/api/notes/';
+
+function CreateNote(id, text, isImportant, isCompleted) {
     this.id = id;
     this.text = text;
-    this.isCompleted = isCompleted;
     this.isImportant = isImportant;
+    this.isCompleted = isCompleted;
 }
 
-loadNotesFromServer(api);
-
-function addTask() {    
-    if ($('#task').val() == '') {
-        return;
-    }
-
-    let note = new Note(NaN, `${$('#task').val()}`, false, false);
-    delete note.id;
-
-    // Add task to server.
-    $.ajax({
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json' 
-        },
-        type: "POST",
-        url: api,
-        data: JSON.stringify(note),
-        dataType: 'json',
-        success: function (data, status, xhr) {
-            let createdNoteUrl = xhr.getResponseHeader('Location');
-
-            $.ajax({
-                url: createdNoteUrl,
-                success: function (data) {
-                    note.id = data.id;
-                    notesList.push(note);
-
-                    createNoteMarkup(note);
-                    
-                    $('#task').val('');
-                    $(`li#${note.id}`).fadeOut(0);
-                    $(`li#${note.id}`).fadeIn(350);
-
-                    console.log(notesList);
-                }
-            });
-        }
-    });   
-}
-
-function deleteTask(id){
-    let index = notesList.findIndex((x) =>{
-        return x.id == id;
-    });
-
-    $.ajax({
-        type: "DELETE",
-        url: api + id,
-        success: function () {
-            $(`li#${id}`).fadeOut(350, function () {
-                notesList.splice(index, 1);
-                this.remove();
-            })  
-
-            console.log('Deleted successfuly');
-        }
-    });
-}
-
-function updateNote(noteId, updatedNote) {
-    $.ajax({
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json' 
-        },
-        url: api + noteId,
-        method: 'put',
-        data: JSON.stringify(updatedNote),
-        dataType: 'json'
-    })
-}
+loadNotes();
 
 
-// Обработчики событий.
 $(document).ready(function () {
 
-    // Нажатие на красный крестик (удаление заметки).
-    $(document).on('click', '.btn_del', function (e) {
-        let taskId = $(this).parent().attr('id');
-        let taskToDelete = notesList.find((note) => {
-            return note.id == taskId;
-        });
+    $(document).on('click', '#btn_add', function () {
+        add();
+    })
 
-        Swal.fire({
-            title: 'Удалить заметку?',
-            text: taskToDelete.text,
-            icon: 'warning',
-            showCancelButton: true,
-            cancelButtonText: 'Отмена',
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Удалить'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                deleteTask(taskId);
-            }
-        })
+    $(document).on('click', '#btn_del', function () {
+        del(this);
     }) 
+
+    // Зарегистрировать клавиши для быстрого добавления заметки и отмены ввода.
+    $('#task').on('keydown', function (arg) {
+        registerKeys(arg, 'Enter', 'Escape');
+    });
 
     // Нажатие на звездчоку (важная заметка).
     $(document).on('click', '.fa-star', function (e) {
-        
-        let noteId = $(this).parent().attr('id');
+        let parent = $(this).parent();
+        let id = $(this).parent().attr('id');
+        let text = $(this).parent().find('#text').val();
+        let isImportant = $(this).hasClass('fas');
+        let isCompleted = $(this).find('#text').is(':checked');
 
-        let noteToEdit = notesList.find((x) => {
-            return x.id == noteId;
-        });
-        
-        noteToEdit.isImportant = !noteToEdit.isImportant;
-        if (noteToEdit.isImportant){
-            $(this).removeClass('far').addClass('fas');
-        }
-        else{
+        if (isImportant) {
             $(this).removeClass('fas').addClass('far');
         }
+        else {
+            $(this).removeClass('far').addClass('fas');
+        }
 
-        let copy = Object.assign({}, noteToEdit);
-        delete copy.id;
-        updateNote(noteId, copy);
+        let note = new CreateNote(id, text, !isImportant, isCompleted);
+        delete note.id;
+
+        updateNote(id, note);
     }) 
-
 
     // Нажатие на checkbox (Задача выполнена)
     $(document).on('click', '.task_item__checkbox', function (e) {
         console.log('checkbox clicked');
 
         let noteId = $(this).parent().attr('id');
-
-        let noteToEdit = notesList.find((x) => {
-            return x.id == noteId;
-        });
-
+ 
         noteToEdit.isCompleted = !noteToEdit.isCompleted;
         if (noteToEdit.isCompleted) {
             $(this).prop('checked', true);
@@ -156,43 +71,53 @@ $(document).ready(function () {
         updateNote(noteId, copy);
     }) 
 
-    // Enter - создать заметку. 
-    // Escape - очистить поле ввода
-    $('#task').on('keydown', function (arg) {
-        if (arg.key == 'Enter') {
-            addTask();
-        }
-        else if (arg.key == 'Escape') {
-            $('#task').val('');
-        }
-    });
-});
 
+    // Нажатие на checkbox (Задача выполнена)
+    //$(document).on('click', '.task_item__checkbox', function (e) {
+    //    console.log('checkbox clicked');
 
-function loadNotesFromServer(url) {
-    loadedTaskList = [];
-    $.ajax({
-        url
-    }).done(function (data) {
-        notesList = data;
+    //    let noteId = $(this).parent().attr('id');
 
-        notesList.forEach((note) => {
-            createNoteMarkup(note)
-        })
+    //    let noteToEdit = notesList.find((x) => {
+    //        return x.id == noteId;
+    //    });
 
-        $(`.todo_list li`).fadeOut(0);
-        $(`.todo_list li`).fadeIn(350);
-    });
+    //    noteToEdit.isCompleted = !noteToEdit.isCompleted;
+    //    if (noteToEdit.isCompleted) {
+    //        $(this).prop('checked', true);
+    //    }
+    //    else {
+    //        $(this).prop('checked', false);
+    //    }
+
+    //    let copy = Object.assign({}, noteToEdit);
+    //    delete copy.id;
+
+    //    updateNote(noteId, copy);
+    //}) 
+})
+
+function add() {    
+    let noteText = $('#task').val();
+
+    if (noteText == '') {
+        return;
+    }
+
+    let note = new CreateNote(NaN, noteText, false, false);
+    createNote(note)
 }
 
+function del(context) {
+    let id = $(context).parent().attr('id');
+    deleteNote(id);
+}
 
-function createNoteMarkup(note) {
-    $('.todo_list').append(
-        `
-        <li id='${note.id}' class="task_item">
-            <i class="${note.isImportant ? 'fas' : 'far'} fa-star"></i>
-            <input class="task_item__checkbox" type="checkbox" ${note.isCompleted ? 'checked' : 'unchecked'}>${note.text}<i class="far fa-times-circle btn_del"></i>
-        </li>
-        `
-    );
+function registerKeys(arg, addKeyName, resetKeyName) {
+    if (arg.key == addKeyName) {
+        add();
+    }
+    else if (arg.key == resetKeyName) {
+        $('#task').val('');
+    }
 }

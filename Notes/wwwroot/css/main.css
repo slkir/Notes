@@ -67,11 +67,12 @@ button {
   margin-top: 25px;
 }
 
-.btn_del {
-  position: absolute;
-  right: 0;
-  margin-right: 0;
-  color: red;
+.far.fa-times-circle {
+	display: inline-block;
+	position: absolute;
+	right: 0;
+	margin-right: 0;
+	color: red;
 }
 
 .todo_list {
@@ -83,9 +84,6 @@ button {
   padding-left: 0;
 }
 
-.btn_del {
-  display: inline-block;
-}
 
 .fas.fa-star{
   color:  orangered;
