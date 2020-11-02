@@ -110,8 +110,9 @@ $(document).ready(function () {
             $(this).removeClass('fas').addClass('far');
         }
 
-        delete noteToEdit.id;
-        updateNote(noteId, noteToEdit);
+        let copy = Object.assign({}, noteToEdit);
+        delete copy.id;
+        updateNote(noteId, copy);
     }) 
 
 
@@ -133,8 +134,10 @@ $(document).ready(function () {
             $(this).prop('checked', false);
         }
 
-        delete noteToEdit.id;
-        updateNote(noteId, noteToEdit);
+        let copy = Object.assign({}, noteToEdit);
+        delete copy.id;
+
+        updateNote(noteId, copy);
     }) 
 });
 
