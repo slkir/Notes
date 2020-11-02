@@ -84,13 +84,25 @@ $(document).ready(function () {
 
     // Нажатие на красный крестик (удаление заметки).
     $(document).on('click', '.btn_del', function (e) {
-        if (confirm('Вы действительно хотите удалить эту заметку?')) {   
-            let taskId = $(this).parent().attr('id');
-            deleteTask(taskId);
-        }
-        else {
-            console.log('Отмена удаления')
-        }
+        let taskId = $(this).parent().attr('id');
+        let taskToDelete = noteList.find((note) => {
+            return note.id == taskId;
+        });
+
+        Swal.fire({
+            title: 'Удалить заметку?',
+            text: taskToDelete.text,
+            icon: 'warning',
+            showCancelButton: true,
+            cancelButtonText: 'Отмена',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Удалить'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                deleteTask(taskId);
+            }
+        })
     }) 
 
     // Нажатие на звездчоку (важная заметка).
