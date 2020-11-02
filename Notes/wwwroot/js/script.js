@@ -33,7 +33,7 @@ function addTask() {
                     note.id = data.id;
                     noteList.push(note);
 
-                    addNoteMarkup(note);
+                    createNoteMarkup(note);
                     
                     $('#task').val('');
                     $(`li#${note.id}`).fadeOut(0);
@@ -151,17 +151,19 @@ $(document).ready(function () {
 
         updateNote(noteId, copy);
     }) 
+
+    // Enter - создать заметку. 
+    // Escape - очистить поле ввода
+    $('#task').on('keydown', function (arg) {
+        if (arg.key == 'Enter') {
+            addTask();
+        }
+        else if (arg.key == 'Escape') {
+            $('#task').val('');
+        }
+    });
 });
 
-
-$('#task').on('keydown', function (arg) {
-    if (arg.key == 'Enter') {
-        addTask();
-    }
-    else if (arg.key == 'Escape') {
-        $('#task').val('');
-    }
-});
 
 function loadNotesFromServer(url) {
     loadedTaskList = [];
@@ -169,20 +171,18 @@ function loadNotesFromServer(url) {
         url
     }).done(function (data) {
         noteList = data;
-        loadTasks();
+
+        noteList.forEach((note) => {
+            createNoteMarkup(note)
+        })
+
+        $(`.todo_list li`).fadeOut(0);
+        $(`.todo_list li`).fadeIn(350);
     });
 }
 
-function loadTasks() {
-    noteList.forEach((note) => {
-        addNoteMarkup(note)
-    })
 
-    $(`.todo_list li`).fadeOut(0);
-    $(`.todo_list li`).fadeIn(350);
-}
-
-function addNoteMarkup(note) {
+function createNoteMarkup(note) {
     $('.todo_list').append(
         `
         <li id='${note.id}' class="task_item">
