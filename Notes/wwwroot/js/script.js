@@ -1,5 +1,12 @@
-let noteList = [];
+let notesList = [];
 let api = 'https://localhost:44346/api/notes/';
+
+let Note = function (id, text, isCompleted, isImportant) {
+    this.id = id;
+    this.text = text;
+    this.isCompleted = isCompleted;
+    this.isImportant = isImportant;
+}
 
 loadNotesFromServer(api);
 
@@ -7,12 +14,9 @@ function addTask() {
     if ($('#task').val() == '') {
         return;
     }
-   
-    let note = {
-        text: `${$('#task').val()}`,
-        isCompleted: false,
-        isImportant: false
-    }
+
+    let note = new Note(NaN, `${$('#task').val()}`, false, false);
+    delete note.id;
 
     // Add task to server.
     $.ajax({
@@ -31,7 +35,7 @@ function addTask() {
                 url: createdNoteUrl,
                 success: function (data) {
                     note.id = data.id;
-                    noteList.push(note);
+                    notesList.push(note);
 
                     createNoteMarkup(note);
                     
@@ -39,7 +43,7 @@ function addTask() {
                     $(`li#${note.id}`).fadeOut(0);
                     $(`li#${note.id}`).fadeIn(350);
 
-                    console.log(noteList);
+                    console.log(notesList);
                 }
             });
         }
@@ -47,7 +51,7 @@ function addTask() {
 }
 
 function deleteTask(id){
-    let index = noteList.findIndex((x) =>{
+    let index = notesList.findIndex((x) =>{
         return x.id == id;
     });
 
@@ -56,7 +60,7 @@ function deleteTask(id){
         url: api + id,
         success: function () {
             $(`li#${id}`).fadeOut(350, function () {
-                noteList.splice(index, 1);
+                notesList.splice(index, 1);
                 this.remove();
             })  
 
@@ -85,7 +89,7 @@ $(document).ready(function () {
     // Нажатие на красный крестик (удаление заметки).
     $(document).on('click', '.btn_del', function (e) {
         let taskId = $(this).parent().attr('id');
-        let taskToDelete = noteList.find((note) => {
+        let taskToDelete = notesList.find((note) => {
             return note.id == taskId;
         });
 
@@ -110,7 +114,7 @@ $(document).ready(function () {
         
         let noteId = $(this).parent().attr('id');
 
-        let noteToEdit = noteList.find((x) => {
+        let noteToEdit = notesList.find((x) => {
             return x.id == noteId;
         });
         
@@ -134,7 +138,7 @@ $(document).ready(function () {
 
         let noteId = $(this).parent().attr('id');
 
-        let noteToEdit = noteList.find((x) => {
+        let noteToEdit = notesList.find((x) => {
             return x.id == noteId;
         });
 
@@ -170,9 +174,9 @@ function loadNotesFromServer(url) {
     $.ajax({
         url
     }).done(function (data) {
-        noteList = data;
+        notesList = data;
 
-        noteList.forEach((note) => {
+        notesList.forEach((note) => {
             createNoteMarkup(note)
         })
 
