@@ -88,7 +88,9 @@ function createNoteMarkup(note) {
         `
         <li id='${note.id}' class="task_item">
             <i class="${note.isImportant ? 'fas' : 'far'} fa-star"></i>
-            <input id='text' class="task_item__checkbox" type="checkbox" ${note.isCompleted ? 'checked' : 'unchecked'}>${note.text}<i id='btn_del' class="far fa-times-circle"></i>
+            <input class="task_item__checkbox" type="checkbox" ${note.isCompleted ? 'checked' : 'unchecked'}>
+            <span class='note_text'>${note.text}</span>
+            <i id='btn_del' class="far fa-times-circle"></i>
         </li>
         `
     );

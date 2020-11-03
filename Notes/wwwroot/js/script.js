@@ -1,9 +1,7 @@
-import { loadNotes } from './server.js'
-import { createNote } from './server.js'
-import { deleteNote } from './server.js'
-import { updateNote } from './server.js'
-
-let url = 'https://localhost:44346/api/notes/';
+import { loadNotes } from './note.js'
+import { createNote } from './note.js'
+import { deleteNote } from './note.js'
+import { updateNote } from './note.js'
 
 function CreateNote(id, text, isImportant, isCompleted) {
     this.id = id;
@@ -13,7 +11,6 @@ function CreateNote(id, text, isImportant, isCompleted) {
 }
 
 loadNotes();
-
 
 $(document).ready(function () {
 
@@ -30,71 +27,16 @@ $(document).ready(function () {
         registerKeys(arg, 'Enter', 'Escape');
     });
 
-    // Нажатие на звездчоку (важная заметка).
+    // Установить важность заметки.
     $(document).on('click', '.fa-star', function (e) {
-        let parent = $(this).parent();
-        let id = $(this).parent().attr('id');
-        let text = $(this).parent().find('#text').val();
-        let isImportant = $(this).hasClass('fas');
-        let isCompleted = $(this).find('#text').is(':checked');
-
-        if (isImportant) {
-            $(this).removeClass('fas').addClass('far');
-        }
-        else {
-            $(this).removeClass('far').addClass('fas');
-        }
-
-        let note = new CreateNote(id, text, !isImportant, isCompleted);
-        delete note.id;
-
-        updateNote(id, note);
+        toggleStar(this);
+        update(this);
     }) 
 
     // Нажатие на checkbox (Задача выполнена)
     $(document).on('click', '.task_item__checkbox', function (e) {
-        console.log('checkbox clicked');
-
-        let noteId = $(this).parent().attr('id');
- 
-        noteToEdit.isCompleted = !noteToEdit.isCompleted;
-        if (noteToEdit.isCompleted) {
-            $(this).prop('checked', true);
-        }
-        else {
-            $(this).prop('checked', false);
-        }
-
-        let copy = Object.assign({}, noteToEdit);
-        delete copy.id;
-
-        updateNote(noteId, copy);
+        update(this);
     }) 
-
-
-    // Нажатие на checkbox (Задача выполнена)
-    //$(document).on('click', '.task_item__checkbox', function (e) {
-    //    console.log('checkbox clicked');
-
-    //    let noteId = $(this).parent().attr('id');
-
-    //    let noteToEdit = notesList.find((x) => {
-    //        return x.id == noteId;
-    //    });
-
-    //    noteToEdit.isCompleted = !noteToEdit.isCompleted;
-    //    if (noteToEdit.isCompleted) {
-    //        $(this).prop('checked', true);
-    //    }
-    //    else {
-    //        $(this).prop('checked', false);
-    //    }
-
-    //    let copy = Object.assign({}, noteToEdit);
-    //    delete copy.id;
-
-    //    updateNote(noteId, copy);
-    //}) 
 })
 
 function add() {    
@@ -113,11 +55,35 @@ function del(context) {
     deleteNote(id);
 }
 
+function update(context) {
+    let parent = $(context).parent();
+    let id = parent.attr('id');
+
+    let note = new CreateNote(
+        id,
+        parent.find('.note_text').text(),
+        parent.find('.fa-star').hasClass('fas'),
+        parent.find('.task_item__checkbox').is(':checked'));
+
+    delete note.id;
+
+    updateNote(id, note);
+}
+
 function registerKeys(arg, addKeyName, resetKeyName) {
     if (arg.key == addKeyName) {
         add();
     }
     else if (arg.key == resetKeyName) {
         $('#task').val('');
+    }
+}
+
+function toggleStar(context) {
+    if ($(context).hasClass('fas')) {
+        $(context).removeClass('fas').addClass('far');
+    }
+    else {
+        $(context).removeClass('far').addClass('fas');
     }
 }
